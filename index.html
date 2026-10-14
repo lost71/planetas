@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CosmoPedia 3D - Enciclopédia Interativa do Universo & AstroBot</title>
+  <meta name="description" content="Explore o sistema solar em 3D, exoplanetas, curiosidades em tempo real, histórias de astronautas e interaja com o AstroBot, seu robô companheiro espacial!">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Canvas de Partículas do Mouse e Efeitos Cósmicos -->
+  <canvas id="mouseFxCanvas"></canvas>
+  
+  <!-- Trilha do Cursor Personalizado -->
+  <div id="cosmicCursor" class="cosmic-cursor">
+    <div class="cursor-dot"></div>
+    <div class="cursor-ring"></div>
+  </div>
+
+  <!-- Background 3D Viewport -->
+  <div id="canvasContainer">
+    <canvas id="webglCanvas"></canvas>
+    
+    <!-- Controles de Câmera 3D flutuantes -->
+    <div class="viewport-overlay-controls">
+      <button id="btnResetCamera" class="hud-mini-btn" title="Restaurar Visão Geral">
+        <i class="fa-solid fa-arrows-to-circle"></i> <span>Visão Geral</span>
+      </button>
+      <button id="btnToggleOrbits" class="hud-mini-btn" title="Alternar Órbitas">
+        <i class="fa-solid fa-circle-notch"></i> <span>Órbitas: ON</span>
+      </button>
+      <button id="btnWarpSpeed" class="hud-mini-btn highlight-btn" title="Velocidade da Luz / Hiperespaço">
+        <i class="fa-solid fa-bolt"></i> <span>Hiperespaço</span>
+      </button>
+      <button id="btnAudioToggle" class="hud-mini-btn" title="Som Ambiente e Efeitos">
+        <i class="fa-solid fa-volume-high"></i> <span>Áudio Cósmico</span>
+      </button>
+    </div>
+
+    <!-- Dica de Navegação 3D -->
+    <div class="viewport-hint">
+      <span><i class="fa-solid fa-hand-pointer"></i> Arraste para girar • Scroll para zoom • Clique num planeta para focar</span>
+    </div>
+  </div>
+
+  <!-- Header Superior / Barra de Status -->
+  <header class="cosmic-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-shuttle-space"></i>
+      </div>
+      <div>
+        <h1 class="brand-title">Cosmo<span>Pedia</span></h1>
+        <p class="brand-subtitle">Explorador Espacial Interativo • Sistema Solar & Além</p>
+      </div>
+    </div>
+
+    <!-- Live Cosmic Feed ticker -->
+    <div class="live-ticker-container">
+      <div class="ticker-badge"><span class="pulse-dot"></span> RADAR CÓSMICO AO VIVO</div>
+      <div class="ticker-content" id="liveTickerText">
+        Inicializando receptores de rádio de águas profundas do espaço...
+      </div>
+      <button id="btnNextFact" class="ticker-refresh-btn" title="Buscar nova curiosidade agora">
+        <i class="fa-solid fa-satellite-dish"></i>
+      </button>
+    </div>
+
+    <!-- Navegação por Categorias -->
+    <nav class="nav-filters">
+      <button class="nav-btn active" data-category="planets">
+        <i class="fa-solid fa-globe"></i> Planetas
+      </button>
+      <button class="nav-btn" data-category="exoplanets">
+        <i class="fa-solid fa-ring"></i> Exoplanetas
+      </button>
+      <button class="nav-btn" data-category="astronauts">
+        <i class="fa-solid fa-user-astronaut"></i> Astronautas
+      </button>
+      <button class="nav-btn" data-category="deepspace">
+        <i class="fa-solid fa-atom"></i> Astros & Mistérios
+      </button>
+      <button class="nav-btn" data-category="missions">
+        <i class="fa-solid fa-satellite"></i> Missões & Telescópios
+      </button>
+    </nav>
+  </header>
+
+  <!-- Barra de Ações Rápida e Filtros -->
+  <div class="sub-nav-bar">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="searchInput" placeholder="Pesquisar planeta, astronauta, buraco negro...">
+      <button id="btnClearSearch" class="clear-search-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Carrossel Rápido de Foco 3D dos Planetas -->
+    <div class="quick-planet-selector" id="quickPlanetSelector">
+      <!-- Injetado dinamicamente via JS -->
+    </div>
+  </div>
+
+  <!-- Gaveta Lateral Retrátil de Cartões de Exploração -->
+  <aside class="exploration-drawer" id="explorationDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title-wrap">
+        <h2 id="drawerTitle"><i class="fa-solid fa-compass"></i> Guia Espacial</h2>
+        <span class="items-count-badge" id="itemsCountBadge">0 descobertas</span>
+      </div>
+      <button id="btnToggleDrawer" class="drawer-toggle-btn" title="Recolher/Expandir Painel">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+    </div>
+
+    <div class="drawer-cards-grid" id="drawerCardsGrid">
+      <!-- Cartões informativos carregados aqui -->
+    </div>
+  </aside>
+
+  <!-- AstroBot: Robô Fofinho Flutuante e Interativo -->
+  <div class="astrobot-wrapper" id="astroBotWrapper">
+    <!-- Balão de Fala do Robô -->
+    <div class="robot-speech-bubble" id="robotSpeech">
+      <p id="robotMessage">Bip bop! Olá, comandante humano! Eu sou o <strong>Cosmo-X</strong>, seu copiloto robótico. Clique em mim ou me chame para aprender segredos do espaço!</p>
+      <div class="robot-actions">
+        <button id="btnBotTellSecret" class="bot-action-btn"><i class="fa-solid fa-wand-magic-sparkles"></i> Curiosidade</button>
+        <button id="btnBotQuiz" class="bot-action-btn"><i class="fa-solid fa-brain"></i> Quiz Cósmico</button>
+        <button id="btnBotFollowMouse" class="bot-action-btn"><i class="fa-solid fa-magnet"></i> Me Seguir</button>
+      </div>
+    </div>
+
+    <!-- O Robô em SVG Hiper Detalhado & Animado -->
+    <div class="robot-avatar" id="robotAvatar" title="Clique em mim para conversar ou fazer carinho!">
+      <!-- Propulsor a Jato de Partículas -->
+      <div class="jetpack-flame"></div>
+      
+      <!-- Antena -->
+      <div class="robot-antenna">
+        <div class="antenna-ball"></div>
+        <div class="antenna-rod"></div>
+      </div>
+
+      <!-- Cabeça -->
+      <div class="robot-head">
+        <!-- Orelhas com luzes de som -->
+        <div class="robot-ear ear-left"></div>
+        <div class="robot-ear ear-right"></div>
+        
+        <!-- Visor Digital -->
+        <div class="robot-visor">
+          <!-- Olhos Expressivos SVG que reagem e acompanham o mouse -->
+          <div class="robot-eye eye-left" id="eyeLeft">
+            <div class="pupil"></div>
+            <div class="eye-shine"></div>
+          </div>
+          <div class="robot-eye eye-right" id="eyeRight">
+            <div class="pupil"></div>
+            <div class="eye-shine"></div>
+          </div>
+          <!-- Bochechas fofas coradas -->
+          <div class="blush blush-left"></div>
+          <div class="blush blush-right"></div>
+          <!-- Boca do Robô -->
+          <div class="robot-mouth" id="robotMouth"></div>
+        </div>
+      </div>
+
+      <!-- Tronco do Robô -->
+      <div class="robot-body">
+        <div class="body-reactor" id="robotReactor">
+          <i class="fa-solid fa-atom"></i>
+        </div>
+        <!-- Bracinhos articulados acenando -->
+        <div class="robot-arm arm-left">
+          <div class="hand"></div>
+        </div>
+        <div class="robot-arm arm-right">
+          <div class="hand"></div>
+        </div>
+      </div>
+
+      <div class="bot-badge">COSMO-X</div>
+    </div>
+  </div>
+
+  <!-- Modal Detalhado de Informações do Astro / Astronauta / Planeta -->
+  <div class="modal-backdrop" id="infoModal">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="btnCloseModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="modal-content-grid" id="modalContent">
+        <!-- Preenchido via Javascript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Quiz Cósmico com o AstroBot -->
+  <div class="modal-backdrop" id="quizModal">
+    <div class="modal-card quiz-card">
+      <button class="modal-close-btn" id="btnCloseQuiz">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="quiz-header">
+        <div class="quiz-bot-avatar">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div>
+          <h2>Desafio Espacial do Cosmo-X!</h2>
+          <p>Prove seus conhecimentos astronômicos e ganhe insígnias de Comandante Galáctico.</p>
+        </div>
+      </div>
+
+      <div class="quiz-body" id="quizBody">
+        <div class="quiz-progress-bar">
+          <div class="quiz-progress-fill" id="quizProgressFill"></div>
+        </div>
+        <div class="quiz-question-box">
+          <span class="quiz-step-tag" id="quizStepTag">Pergunta 1 de 5</span>
+          <h3 id="quizQuestionText">Carregando pergunta...</h3>
+        </div>
+        <div class="quiz-options-list" id="quizOptionsList">
+          <!-- Opções dinâmicas -->
+        </div>
+      </div>
+
+      <div class="quiz-footer">
+        <div class="quiz-score-pill">Pontuação: <span id="quizScoreVal">0</span></div>
+        <button id="btnNextQuiz" class="bot-action-btn primary-action-btn" style="display: none;">Próxima Pergunta <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts do App -->
+  <script src="space-data.js"></script>
+  <script src="three-scene.js"></script>
+  <script src="mouse-fx.js"></script>
+  <script src="robot.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
