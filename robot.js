@@ -24,13 +24,14 @@ class AstroBot {
     this.isFollowingMouse = false;
     this.isDizzy = false;
     this.speechTimeout = null;
-    this.posX = window.innerWidth - 220;
-    this.posY = window.innerHeight - 260;
+    this.posX = window.innerWidth - 130;
+    this.posY = window.innerHeight - 155;
     this.targetX = this.posX;
     this.targetY = this.posY;
     this.mouseSpeed = 0;
     this.lastMousePos = { x: 0, y: 0 };
     this.dizzyCounter = 0;
+    this.pupils = this.avatar ? this.avatar.querySelectorAll('.pupil') : [];
 
     // Banco de falas e piadas espaciais
     this.secretsAndJokes = [
@@ -53,8 +54,17 @@ class AstroBot {
     // Posiciona inicialmente no canto inferior direito de forma harmoniosa
     this.updatePosition(this.posX, this.posY);
 
+    // Ajusta posição em caso de redimensionamento da janela
+    window.addEventListener('resize', () => {
+      if (!this.isFollowingMouse) {
+        this.targetX = window.innerWidth - 130;
+        this.targetY = window.innerHeight - 155;
+        this.updatePosition(this.targetX, this.targetY);
+      }
+    });
+
     // Rastreamento dos Olhos em relação ao cursor
-    window.addEventListener('mousemove', (e) => this.onMouseMove(e));
+    window.addEventListener('mousemove', (e) => this.onMouseMove(e), { passive: true });
 
     // Clique no avatar do robô (interação fofa / carinho)
     this.avatar.addEventListener('click', (e) => {
@@ -94,14 +104,13 @@ class AstroBot {
     const angle = Math.atan2(deltaY, deltaX);
     const dist = Math.hypot(deltaX, deltaY);
     
-    // Limite máximo de deslocamento das pupilas dentro do visor
-    const maxPupilOffset = 6;
-    const offset = Math.min(dist * 0.05, maxPupilOffset);
+    // Limite calibrado para os olhinhos menores
+    const maxPupilOffset = 3.5;
+    const offset = Math.min(dist * 0.04, maxPupilOffset);
     const pupilX = Math.cos(angle) * offset;
     const pupilY = Math.sin(angle) * offset;
 
-    const pupils = this.avatar.querySelectorAll('.pupil');
-    pupils.forEach(pupil => {
+    this.pupils.forEach(pupil => {
       pupil.style.transform = `translate(${pupilX}px, ${pupilY}px)`;
     });
 
@@ -109,9 +118,9 @@ class AstroBot {
     const mouseDelta = Math.hypot(e.clientX - this.lastMousePos.x, e.clientY - this.lastMousePos.y);
     this.lastMousePos = { x: e.clientX, y: e.clientY };
 
-    if (dist < 150 && mouseDelta > 28) {
+    if (dist < 120 && mouseDelta > 28) {
       this.dizzyCounter++;
-      if (this.dizzyCounter > 30 && !this.isDizzy) {
+      if (this.dizzyCounter > 25 && !this.isDizzy) {
         this.triggerDizziness();
       }
     } else {
@@ -120,29 +129,26 @@ class AstroBot {
 
     // 3. Se estiver em modo de seguir mouse
     if (this.isFollowingMouse) {
-      // Flutua a uma distância confortável do mouse (offset para não cobrir o clique)
-      this.targetX = e.clientX + 35;
-      this.targetY = e.clientY - 45;
+      this.targetX = e.clientX + 22;
+      this.targetY = e.clientY - 28;
 
       // Limita dentro da viewport visível
-      this.targetX = Math.max(20, Math.min(window.innerWidth - 180, this.targetX));
-      this.targetY = Math.max(20, Math.min(window.innerHeight - 200, this.targetY));
+      this.targetX = Math.max(10, Math.min(window.innerWidth - 110, this.targetX));
+      this.targetY = Math.max(10, Math.min(window.innerHeight - 120, this.targetY));
     }
   }
 
   updateLoop() {
     requestAnimationFrame(this.updateLoop);
 
-    if (this.isFollowingMouse) {
-      // Interpolação suave para acompanhar o mouse (estilo flutuação gravitacional)
-      const dx = this.targetX - this.posX;
-      const dy = this.targetY - this.posY;
+    const dx = this.targetX - this.posX;
+    const dy = this.targetY - this.posY;
 
-      this.posX += dx * 0.07;
-      this.posY += dy * 0.07;
+    if (this.isFollowingMouse || Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+      this.posX += dx * 0.08;
+      this.posY += dy * 0.08;
 
-      // Inclina o corpinho do robô na direção da aceleração
-      const tilt = Math.max(-18, Math.min(18, dx * 0.4));
+      const tilt = this.isFollowingMouse ? Math.max(-15, Math.min(15, dx * 0.35)) : 0;
       this.wrapper.style.transform = `translate3d(${this.posX}px, ${this.posY}px, 0) rotate(${tilt}deg)`;
     }
   }
@@ -163,9 +169,9 @@ class AstroBot {
     } else {
       this.btnFollow.innerHTML = '<i class="fa-solid fa-magnet"></i> Me Seguir';
       this.btnFollow.classList.remove('active-bot-btn');
-      // Retorna para o canto original
-      this.targetX = window.innerWidth - 220;
-      this.targetY = window.innerHeight - 260;
+      // Retorna para o canto original compacto
+      this.targetX = window.innerWidth - 130;
+      this.targetY = window.innerHeight - 155;
       this.say("Voltando para minha base de observação estelar! 🚀");
       this.playBotChirp([880, 660, 440]);
     }

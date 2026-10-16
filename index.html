@@ -6,6 +6,10 @@
   <title>CosmoPedia 3D - Enciclopédia Interativa do Universo & AstroBot</title>
   <meta name="description" content="Explore o sistema solar em 3D, exoplanetas, curiosidades em tempo real, histórias de astronautas e interaja com o AstroBot, seu robô companheiro espacial!">
   
+  <!-- Favicon do Astro / Planeta Cósmico -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,13 +26,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Canvas de Partículas do Mouse e Efeitos Cósmicos -->
-  <canvas id="mouseFxCanvas"></canvas>
-  
-  <!-- Trilha do Cursor Personalizado -->
-  <div id="cosmicCursor" class="cosmic-cursor">
-    <div class="cursor-dot"></div>
-    <div class="cursor-ring"></div>
+  <!-- Efeito Fita de LED RGB Gamer Ultra Colorida -->
+  <div class="rgb-led-frame" id="rgbLedFrame">
+    <div class="rgb-led-strip top"></div>
+    <div class="rgb-led-strip bottom"></div>
+    <div class="rgb-led-strip left"></div>
+    <div class="rgb-led-strip right"></div>
+    <div class="rgb-led-ambient-glow"></div>
   </div>
 
   <!-- Background 3D Viewport -->

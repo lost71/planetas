@@ -49,10 +49,11 @@ body {
   overflow: hidden; /* Mantém a cena 3D fixa com janelas internas roláveis */
   position: relative;
   user-select: none;
+  cursor: default;
 }
 
 /* ==========================================================================
-   CANVAS DE BACKGROUND (3D SOLAR SYSTEM & MOUSE FX)
+   CANVAS DE BACKGROUND (3D SOLAR SYSTEM)
    ========================================================================== */
 #canvasContainer {
   position: fixed;
@@ -68,64 +69,143 @@ body {
   display: block;
 }
 
-#mouseFxCanvas {
+/* ==========================================================================
+   EFEITO FITA DE LED RGB GAMER ULTRA COLORIDO (CHROMA AMBILIGHT)
+   ========================================================================== */
+.rgb-led-frame {
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 2;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* Fita de LED nos 4 lados com cores RGB ultra vibrantes */
+.rgb-led-strip {
+  position: absolute;
+  background: linear-gradient(
+    90deg,
+    #ff0033,
+    #ff6600,
+    #ffea00,
+    #00ff66,
+    #00f0ff,
+    #0044ff,
+    #9900ff,
+    #ff00aa,
+    #ff0033
+  );
+  background-size: 400% 400%;
+  animation: rgbFlow 3.5s linear infinite;
+}
+
+.rgb-led-strip.top {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  box-shadow: 0 0 10px #ff0055, 0 0 20px #00f0ff, 0 0 35px #00ff66, 0 0 50px rgba(0, 240, 255, 0.4);
+}
+
+.rgb-led-strip.bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  animation-direction: reverse;
+  box-shadow: 0 0 10px #00f0ff, 0 0 20px #ff00aa, 0 0 35px #ffea00, 0 0 50px rgba(255, 0, 128, 0.4);
+}
+
+.rgb-led-strip.left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 5px;
+  background: linear-gradient(
+    180deg,
+    #ff0033,
+    #ff6600,
+    #ffea00,
+    #00ff66,
+    #00f0ff,
+    #0044ff,
+    #9900ff,
+    #ff00aa,
+    #ff0033
+  );
+  background-size: 400% 400%;
+  animation: rgbFlow 3.5s linear infinite;
+  box-shadow: 0 0 10px #9900ff, 0 0 20px #00ff66, 0 0 35px #ff0033, 0 0 50px rgba(153, 0, 255, 0.4);
+}
+
+.rgb-led-strip.right {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 5px;
+  background: linear-gradient(
+    180deg,
+    #ff00aa,
+    #9900ff,
+    #0044ff,
+    #00f0ff,
+    #00ff66,
+    #ffea00,
+    #ff6600,
+    #ff0033,
+    #ff00aa
+  );
+  background-size: 400% 400%;
+  animation: rgbFlow 3.5s linear infinite;
+  animation-direction: reverse;
+  box-shadow: 0 0 10px #ffea00, 0 0 20px #0044ff, 0 0 35px #ff00aa, 0 0 50px rgba(255, 234, 0, 0.4);
+}
+
+/* Brilho Ambiente RGB Periférico Suave */
+.rgb-led-ambient-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 0, 80, 0.16), transparent 50%),
+              radial-gradient(circle at 100% 50%, rgba(0, 240, 255, 0.14), transparent 50%),
+              radial-gradient(circle at 50% 100%, rgba(0, 255, 100, 0.14), transparent 50%),
+              radial-gradient(circle at 0% 50%, rgba(189, 0, 255, 0.16), transparent 50%);
+  filter: blur(25px);
+  animation: rgbAmbientShift 5s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
-/* ==========================================================================
-   CURSOR CÓSMICO PERSONALIZADO
-   ========================================================================== */
-.cosmic-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 32px;
-  height: 32px;
-  margin-top: -16px;
-  margin-left: -16px;
-  pointer-events: none;
-  z-index: 99999;
-  transition: transform 0.08s ease-out;
-}
-
-.cursor-dot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  transform: translate(-50%, -50%);
-  background: var(--accent-cyan);
-  border-radius: 50%;
-  box-shadow: 0 0 10px var(--accent-cyan);
-}
-
-.cursor-ring {
+/* Feixes de LED RGB nos 4 cantos */
+.rgb-led-frame::before {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  border: 1.5px solid rgba(0, 240, 255, 0.45);
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  animation: cursorPulse 2s infinite ease-in-out;
+  width: 90px;
+  height: 90px;
+  background: radial-gradient(circle at top left, rgba(255, 0, 100, 0.9), transparent 70%);
+  filter: blur(10px);
 }
 
-.cosmic-cursor.cursor-active .cursor-ring {
-  transform: scale(1.6);
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 15px var(--accent-purple);
+.rgb-led-frame::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 90px;
+  height: 90px;
+  background: radial-gradient(circle at bottom right, rgba(0, 240, 255, 0.9), transparent 70%);
+  filter: blur(10px);
 }
 
-@keyframes cursorPulse {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.15); opacity: 0.9; }
+@keyframes rgbFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes rgbAmbientShift {
+  0% { filter: blur(25px) hue-rotate(0deg); opacity: 0.7; }
+  50% { filter: blur(30px) hue-rotate(180deg); opacity: 1; }
+  100% { filter: blur(25px) hue-rotate(360deg); opacity: 0.7; }
 }
 
 /* ==========================================================================
@@ -143,11 +223,26 @@ body {
   gap: 16px;
   padding: 12px 20px;
   background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.cosmic-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ff0033, #ff7700, #ffea00, #00ff66, #00f0ff, #0044ff, #9900ff, #ff00aa, #ff0033);
+  background-size: 300% auto;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.7), 0 0 18px rgba(255, 0, 128, 0.5);
+  animation: rgbFlow 3s linear infinite;
 }
 
 .brand {
@@ -427,8 +522,8 @@ body {
   width: 410px;
   z-index: 8;
   background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
@@ -686,8 +781,8 @@ body {
   align-items: center;
   gap: 10px;
   background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-glass);
   padding: 8px 14px;
   border-radius: var(--radius-pill);
@@ -762,36 +857,36 @@ body {
   will-change: transform;
 }
 
-/* Balão de Fala do Robô */
+/* Balão de Fala do Robô (Compacto & Otimizado) */
 .robot-speech-bubble {
   position: absolute;
-  bottom: 155px;
-  right: -20px;
-  width: 290px;
-  background: rgba(13, 23, 48, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  bottom: 105px;
+  right: -10px;
+  width: 250px;
+  background: rgba(13, 23, 48, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--accent-cyan);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  box-shadow: var(--shadow-card), var(--shadow-neon);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-card), 0 0 15px rgba(0, 240, 255, 0.2);
   pointer-events: auto;
   opacity: 0;
-  transform: translateY(12px) scale(0.95);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(8px) scale(0.95);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .robot-speech-bubble::after {
   content: '';
   position: absolute;
-  bottom: -9px;
-  right: 58px;
-  width: 16px;
-  height: 16px;
-  background: rgba(13, 23, 48, 0.92);
+  bottom: -8px;
+  right: 48px;
+  width: 14px;
+  height: 14px;
+  background: rgba(13, 23, 48, 0.94);
   border-right: 1px solid var(--accent-cyan);
   border-bottom: 1px solid var(--accent-cyan);
   transform: rotate(45deg);
@@ -803,8 +898,8 @@ body {
 }
 
 .robot-speech-bubble p {
-  font-size: 0.82rem;
-  line-height: 1.45;
+  font-size: 0.78rem;
+  line-height: 1.4;
   color: #f1f5f9;
 }
 
@@ -822,14 +917,14 @@ body {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: var(--text-primary);
-  padding: 6px 10px;
+  padding: 5px 9px;
   border-radius: var(--radius-pill);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   transition: all 0.2s ease;
 }
 
@@ -846,20 +941,22 @@ body {
   box-shadow: 0 0 10px var(--accent-pink);
 }
 
-/* O Avatar do Robô (Design Cute & High-Tech) */
+/* O Avatar do Robô (Design Cute & High-Tech - Menor & Leve) */
 .robot-avatar {
   width: 105px;
   height: 135px;
   position: relative;
   cursor: pointer;
   pointer-events: auto;
+  scale: 0.65;
+  transform-origin: bottom right;
   animation: robotFloat 3.2s infinite ease-in-out;
   transition: transform 0.3s ease;
 }
 
 @keyframes robotFloat {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+  50% { transform: translateY(-7px); }
 }
 
 .robot-avatar.bot-spin-happy {
@@ -867,9 +964,9 @@ body {
 }
 
 @keyframes botBackflip {
-  0% { transform: translateY(0) rotate(0deg) scale(1); }
-  50% { transform: translateY(-35px) rotate(180deg) scale(1.15); }
-  100% { transform: translateY(0) rotate(360deg) scale(1); }
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-22px) rotate(180deg) scale(1.1); }
+  100% { transform: translateY(0) rotate(360deg); }
 }
 
 .robot-avatar.bot-dizzy-anim {
